@@ -2,58 +2,46 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import pandas as pd
-import numpy as np
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-# ── Load model Random Forest (model terbaik, dari .pkl asli) ──
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "house_price_model.pkl")
-rf_model = joblib.load(MODEL_PATH)
-print("✅ Random Forest model loaded!")
+# ── Load semua 4 model dari folder models/ ──
+BASE_DIR = os.path.dirname(__file__)
 
-# ── Kalibrasi koefisien model lain dari hasil notebook ──
-# Parameter ini dikalibrasi dari hasil training di house_predict_price.ipynb
-# Ridge: R²~0.72, MAE~3.2M | Lasso: R²~0.68, MAE~3.8M | Linear: R²~0.70, MAE~3.5M
-MODEL_PARAMS = {
-    "ridge": {
-        "intercept":  1_200_000_000,
-        "coef_lb":    8_800_000,
-        "coef_lt":    6_000_000,
-        "coef_kt":  295_000_000,
-        "coef_km":  180_000_000,
-        "coef_grs": 150_000_000,
-        "r2":   0.72,
-        "mae":  3_200_000_000 / 1000,  # ~3.2M
-    },
-    "lasso": {
-        "intercept":  1_100_000_000,
-        "coef_lb":    9_500_000,
-        "coef_lt":    6_800_000,
-        "coef_kt":  280_000_000,
-        "coef_km":  160_000_000,
-        "coef_grs": 130_000_000,
-        "r2":   0.68,
-        "mae":  3_800_000_000 / 1000,
-    },
-    "linear": {
-        "intercept":  1_300_000_000,
-        "coef_lb":    8_500_000,
-        "coef_lt":    6_200_000,
-        "coef_kt":  300_000_000,
-        "coef_km":  175_000_000,
-        "coef_grs": 145_000_000,
-        "r2":   0.70,
-        "mae":  3_500_000_000 / 1000,
-    },
+MODEL_FILES = {
+    "random_forest":     os.path.join(BASE_DIR, "models", "random_forest.pkl"),
+    "ridge":             os.path.join(BASE_DIR, "models", "ridge.pkl"),
+    "lasso":             os.path.join(BASE_DIR, "models", "lasso.pkl"),
+    "linear_regression": os.path.join(BASE_DIR, "models", "linear_regression.pkl"),
 }
+
+# Metadata model (dari hasil training di notebook)
+MODEL_META = {
+    "random_forest":     {"name": "Random Forest (n=300, d=20)", "r2": 0.87, "mae": 1_800_000, "rank": 1},
+    "ridge":             {"name": "Ridge Regression (α=10)",     "r2": 0.72, "mae": 3_200_000, "rank": 2},
+    "linear_regression": {"name": "Linear Regression",           "r2": 0.70, "mae": 3_500_000, "rank": 3},
+    "lasso":             {"name": "Lasso Regression (α=1000)",   "r2": 0.68, "mae": 3_800_000, "rank": 4},
+}
+
+# Load semua model ke memori saat server start
+MODELS = {}
+for key, path in MODEL_FILES.items():
+    if os.path.exists(path):
+        MODELS[key] = joblib.load(path)
+        print(f"✅ Loaded: {key}")
+    else:
+        print(f"⚠️  Not found: {path} — model ini akan dilewati")
+
+if not MODELS:
+    raise RuntimeError("❌ Tidak ada model yang berhasil dimuat! Pastikan folder models/ ada.")
+
+print(f"\n🚀 {len(MODELS)} model siap digunakan: {list(MODELS.keys())}\n")
 
 
 def build_input_df(lb, lt, kt, km, grs, lokasi):
     """Buat DataFrame sesuai format training di notebook."""
-    rasio_bangunan = lb / lt
-    total_ruangan  = kt + km
     return pd.DataFrame([{
         "LB":             lb,
         "LT":             lt,
@@ -61,105 +49,91 @@ def build_input_df(lb, lt, kt, km, grs, lokasi):
         "KM":             km,
         "GRS":            grs,
         "LOKASI":         lokasi,
-        "RASIO_BANGUNAN": rasio_bangunan,
-        "TOTAL_RUANGAN":  total_ruangan,
-    }]), rasio_bangunan, int(total_ruangan)
+        "RASIO_BANGUNAN": lb / lt,
+        "TOTAL_RUANGAN":  kt + km,
+    }])
 
 
-def predict_linear_model(params, lb, lt, kt, km, grs):
-    """Prediksi menggunakan koefisien linear (Ridge/Lasso/Linear)."""
-    price = (
-        params["intercept"]
-        + lb  * params["coef_lb"]
-        + lt  * params["coef_lt"]
-        + kt  * params["coef_kt"]
-        + km  * params["coef_km"]
-        + grs * params["coef_grs"]
-    )
-    # Adjust non-linear effect untuk large properties
-    if lb > 300:
-        price += lb * 2_000_000
-    if lt > 300:
-        price += lt * 1_500_000
-    return max(float(price), 400_000_000)
+def validate_input(data):
+    """Validasi dan parse input JSON. Return (values, error_message)."""
+    required = ["LB", "LT", "KT", "KM", "GRS", "LOKASI"]
+    for field in required:
+        if field not in data:
+            return None, f"Field '{field}' wajib diisi"
+
+    lb     = float(data["LB"])
+    lt     = float(data["LT"])
+    kt     = float(data["KT"])
+    km     = float(data["KM"])
+    grs    = float(data["GRS"])
+    lokasi = str(data["LOKASI"])
+
+    if not (40 <= lb <= 1200):
+        return None, "LB harus antara 40–1200 m²"
+    if not (25 <= lt <= 1400):
+        return None, "LT harus antara 25–1400 m²"
+    if lt == 0:
+        return None, "LT tidak boleh 0"
+
+    return (lb, lt, kt, km, grs, lokasi), None
 
 
-def format_result(model_key, model_name, price, r2, mae, rank):
-    """Format hasil prediksi satu model."""
-    margin   = price * 0.12
-    return {
-        "model":           model_key,
-        "model_name":      model_name,
-        "harga":           round(price),
-        "harga_min":       round(price - margin),
-        "harga_max":       round(price + margin),
-        "harga_formatted": f"Rp {price:,.0f}",
-        "r2_score":        r2,
-        "mae":             mae,
-        "rank":            rank,
-    }
-
-
+# ────────────────────────────────────────────
+# GET /  → health check
+# ────────────────────────────────────────────
 @app.route("/", methods=["GET"])
 def index():
     return jsonify({
-        "status":    "ok",
-        "message":   "RumahPrediktor API aktif",
-        "models":    ["random_forest", "ridge", "lasso", "linear_regression"],
+        "status":         "ok",
+        "message":        "RumahPrediktor API aktif",
+        "models_loaded":  list(MODELS.keys()),
+        "total_models":   len(MODELS),
         "endpoints": {
-            "predict_all": "POST /predict/all  → 4 model sekaligus",
+            "predict_all": "POST /predict/all  → semua model sekaligus",
             "predict_rf":  "POST /predict      → Random Forest saja",
         }
     })
 
 
-# ── ENDPOINT 1: Semua 4 model sekaligus (untuk tabel perbandingan) ──
+# ────────────────────────────────────────────
+# POST /predict/all → 4 model sekaligus
+# ────────────────────────────────────────────
 @app.route("/predict/all", methods=["POST"])
 def predict_all():
     try:
         data = request.get_json()
+        values, error = validate_input(data)
+        if error:
+            return jsonify({"error": error}), 400
 
-        # Validasi input
-        required = ["LB", "LT", "KT", "KM", "GRS", "LOKASI"]
-        for field in required:
-            if field not in data:
-                return jsonify({"error": f"Field '{field}' wajib diisi"}), 400
+        lb, lt, kt, km, grs, lokasi = values
+        input_df = build_input_df(lb, lt, kt, km, grs, lokasi)
 
-        lb     = float(data["LB"])
-        lt     = float(data["LT"])
-        kt     = float(data["KT"])
-        km     = float(data["KM"])
-        grs    = float(data["GRS"])
-        lokasi = str(data["LOKASI"])
+        results = []
+        for key, pipeline in MODELS.items():
+            meta  = MODEL_META[key]
+            price = float(pipeline.predict(input_df)[0])
+            price = max(price, 400_000_000)
+            margin = price * 0.12
 
-        # Validasi range
-        if not (40 <= lb <= 1200):
-            return jsonify({"error": "LB harus antara 40–1200 m²"}), 400
-        if not (25 <= lt <= 1400):
-            return jsonify({"error": "LT harus antara 25–1400 m²"}), 400
+            results.append({
+                "model":           key,
+                "model_name":      meta["name"],
+                "harga":           round(price),
+                "harga_min":       round(price - margin),
+                "harga_max":       round(price + margin),
+                "harga_formatted": f"Rp {price:,.0f}",
+                "r2_score":        meta["r2"],
+                "mae":             meta["mae"],
+                "rank":            meta["rank"],
+            })
 
-        # Feature engineering
-        input_df, rasio_bangunan, total_ruangan = build_input_df(lb, lt, kt, km, grs, lokasi)
-
-        # ── Prediksi Random Forest (model .pkl asli) ──
-        rf_price = float(rf_model.predict(input_df)[0])
-        rf_price = max(rf_price, 400_000_000)
-
-        # ── Prediksi Ridge, Lasso, Linear ──
-        ridge_price  = predict_linear_model(MODEL_PARAMS["ridge"],  lb, lt, kt, km, grs)
-        lasso_price  = predict_linear_model(MODEL_PARAMS["lasso"],  lb, lt, kt, km, grs)
-        linear_price = predict_linear_model(MODEL_PARAMS["linear"], lb, lt, kt, km, grs)
-
-        results = [
-            format_result("random_forest",     "Random Forest (n=300, d=20)", rf_price,     0.87, 1_800_000, 1),
-            format_result("ridge",             "Ridge Regression (α=10)",     ridge_price,  0.72, 3_200_000, 2),
-            format_result("linear_regression", "Linear Regression",           linear_price, 0.70, 3_500_000, 3),
-            format_result("lasso",             "Lasso Regression (α=1000)",   lasso_price,  0.68, 3_800_000, 4),
-        ]
+        # Urutkan berdasarkan rank
+        results.sort(key=lambda x: x["rank"])
 
         return jsonify({
-            "success": True,
-            "models":  results,
+            "success":    True,
+            "models":     results,
             "best_model": "random_forest",
             "input": {
                 "LB":             lb,
@@ -168,8 +142,8 @@ def predict_all():
                 "KM":             km,
                 "GRS":            grs,
                 "LOKASI":         lokasi,
-                "RASIO_BANGUNAN": round(rasio_bangunan, 3),
-                "TOTAL_RUANGAN":  total_ruangan,
+                "RASIO_BANGUNAN": round(lb / lt, 3),
+                "TOTAL_RUANGAN":  int(kt + km),
             }
         })
 
@@ -177,34 +151,25 @@ def predict_all():
         return jsonify({"error": str(e)}), 500
 
 
-# ── ENDPOINT 2: Random Forest saja (backward compatible) ──
+# ────────────────────────────────────────────
+# POST /predict → Random Forest saja
+# ────────────────────────────────────────────
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
+        values, error = validate_input(data)
+        if error:
+            return jsonify({"error": error}), 400
 
-        required = ["LB", "LT", "KT", "KM", "GRS", "LOKASI"]
-        for field in required:
-            if field not in data:
-                return jsonify({"error": f"Field '{field}' wajib diisi"}), 400
+        lb, lt, kt, km, grs, lokasi = values
+        input_df = build_input_df(lb, lt, kt, km, grs, lokasi)
 
-        lb     = float(data["LB"])
-        lt     = float(data["LT"])
-        kt     = float(data["KT"])
-        km     = float(data["KM"])
-        grs    = float(data["GRS"])
-        lokasi = str(data["LOKASI"])
-
-        if not (40 <= lb <= 1200):
-            return jsonify({"error": "LB harus antara 40–1200 m²"}), 400
-        if not (25 <= lt <= 1400):
-            return jsonify({"error": "LT harus antara 25–1400 m²"}), 400
-
-        input_df, rasio_bangunan, total_ruangan = build_input_df(lb, lt, kt, km, grs, lokasi)
-
-        harga     = float(rf_model.predict(input_df)[0])
-        harga     = max(harga, 400_000_000)
-        margin    = harga * 0.12
+        # Gunakan RF jika ada, fallback ke model pertama yang tersedia
+        pipeline = MODELS.get("random_forest") or list(MODELS.values())[0]
+        harga    = float(pipeline.predict(input_df)[0])
+        harga    = max(harga, 400_000_000)
+        margin   = harga * 0.12
 
         return jsonify({
             "success":         True,
@@ -219,8 +184,8 @@ def predict():
                 "KM":             km,
                 "GRS":            grs,
                 "LOKASI":         lokasi,
-                "RASIO_BANGUNAN": round(rasio_bangunan, 3),
-                "TOTAL_RUANGAN":  total_ruangan,
+                "RASIO_BANGUNAN": round(lb / lt, 3),
+                "TOTAL_RUANGAN":  int(kt + km),
             }
         })
 
