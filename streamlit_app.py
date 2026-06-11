@@ -96,27 +96,41 @@ st.markdown("""
 # ─────────────────────────────────────────
 @st.cache_resource
 def load_models():
-    """Load semua model. Priority: folder models/, fallback ke house_price_model.pkl"""
+    """Load semua model — cari di root folder, subfolder models/, lalu fallback ke house_price_model.pkl"""
     models = {}
     base = os.path.dirname(__file__)
 
+    # Coba nama file yang mungkin dipakai
     model_files = {
-        "random_forest":     os.path.join(base, "models", "random_forest.pkl"),
-        "ridge":             os.path.join(base, "models", "ridge.pkl"),
-        "lasso":             os.path.join(base, "models", "lasso.pkl"),
-        "linear_regression": os.path.join(base, "models", "linear_regression.pkl"),
+        "random_forest": [
+            os.path.join(base, "random_forest.pkl"),
+            os.path.join(base, "models", "random_forest.pkl"),
+            os.path.join(base, "house_price_model.pkl"),
+        ],
+        "ridge": [
+            os.path.join(base, "ridge.pkl"),
+            os.path.join(base, "models", "ridge.pkl"),
+        ],
+        "lasso": [
+            os.path.join(base, "lasso.pkl"),
+            os.path.join(base, "models", "lasso.pkl"),
+        ],
+        "linear_regression": [
+            os.path.join(base, "linear_regression.pkl"),
+            os.path.join(base, "models", "linear_regression.pkl"),
+        ],
     }
 
-    for key, path in model_files.items():
-        if os.path.exists(path):
-            models[key] = joblib.load(path)
+    for key, paths in model_files.items():
+        for path in paths:
+            if os.path.exists(path):
+                models[key] = joblib.load(path)
+                break  # pakai file pertama yang ditemukan
 
-    # Fallback: jika folder models/ belum ada, pakai house_price_model.pkl
-    if not models:
-        fallback = os.path.join(base, "house_price_model.pkl")
-        if os.path.exists(fallback):
-            models["random_forest"] = joblib.load(fallback)
-            st.sidebar.warning("⚠️ Hanya model Random Forest yang tersedia. Jalankan save_all_models.py untuk 4 model.")
+    # Warning jika tidak semua model tersedia
+    missing = [k for k in ["random_forest","ridge","lasso","linear_regression"] if k not in models]
+    if missing:
+        st.sidebar.warning(f"⚠️ Model belum tersedia: {', '.join(missing)}")
 
     return models
 
