@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+import pickle
 import os
 import plotly.graph_objects as go
 import plotly.express as px
@@ -124,8 +124,12 @@ def load_models():
     for key, paths in model_files.items():
         for path in paths:
             if os.path.exists(path):
-                models[key] = joblib.load(path)
-                break  # pakai file pertama yang ditemukan
+                try:
+                    with open(path, "rb") as f:
+                        models[key] = pickle.load(f)
+                    break
+                except Exception as e:
+                    st.sidebar.error(f"❌ Gagal load {key}: {e}")
 
     # Warning jika tidak semua model tersedia
     missing = [k for k in ["random_forest","ridge","lasso","linear_regression"] if k not in models]
@@ -262,16 +266,72 @@ with tab1:
         inp = st.session_state["last_input"]
         lb_i, lt_i, kt_i, km_i, grs_i, lok_i = inp
 
+        # ── Hitung ensemble (simple average semua model) ──
+        all_prices   = [r["price"] for r in results]
+        ensemble_avg = sum(all_prices) / len(all_prices)
+        ensemble_min = ensemble_avg * 0.88
+        ensemble_max = ensemble_avg * 1.12
+
         # ── Input summary chips ──
         st.info(f"📌 Input: LB={lb_i}m² · LT={lt_i}m² · KT={kt_i} · KM={km_i} · GRS={grs_i} · Lokasi={lok_i} · Rasio={lb_i/lt_i:.2f} · Total Ruangan={kt_i+km_i}")
 
-        # ── Winner box ──
+        # ── Ensemble result box (UTAMA) ──
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,#0f2044,#1a3460);border-radius:14px;padding:24px 28px;margin:12px 0;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.45);margin-bottom:4px;">
+            🔀 Ensemble Prediction — Simple Average (4 Model)
+          </div>
+          <div style="font-size:40px;font-weight:700;color:#f5c842;line-height:1;margin-bottom:6px;">
+            {fmt_price(ensemble_avg)}
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:16px;">
+            Kisaran estimasi: {fmt_price(ensemble_min)} – {fmt_price(ensemble_max)}
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px 14px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;">Metode</div>
+              <div style="font-size:13px;font-weight:600;color:#fff;">Simple Average</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px 14px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;">Model Digabung</div>
+              <div style="font-size:13px;font-weight:600;color:#fff;">4 Model</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px 14px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;">Harga/m²</div>
+              <div style="font-size:13px;font-weight:600;color:#fff;">{fmt_short(ensemble_avg/lt_i)}/m²</div>
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── Kontribusi tiap model ke ensemble ──
+        st.markdown("**Kontribusi tiap model ke Ensemble:**")
+        contrib_cols = st.columns(4)
+        model_colors = {"random_forest":"#1e4080","ridge":"#7c3aed","lasso":"#d97706","linear_regression":"#16a34a"}
+        model_labels = {"random_forest":"Random Forest","ridge":"Ridge","lasso":"Lasso","linear_regression":"Linear Reg."}
+        for i, r in enumerate(results):
+            diff     = r["price"] - ensemble_avg
+            diff_pct = (diff / ensemble_avg) * 100
+            arrow    = "▲" if diff >= 0 else "▼"
+            color    = model_colors.get(r["key"], "#666")
+            with contrib_cols[i]:
+                st.markdown(f"""
+                <div style="background:#f8faff;border:1px solid #dbeafe;border-left:4px solid {color};border-radius:8px;padding:10px 12px;text-align:center;">
+                  <div style="font-size:11px;font-weight:700;color:{color};margin-bottom:4px;">{model_labels.get(r['key'], r['key'])}</div>
+                  <div style="font-size:15px;font-weight:700;color:#0f2044;">{fmt_price(r['price'])}</div>
+                  <div style="font-size:11px;color:{'#16a34a' if diff>=0 else '#dc2626'};">{arrow} {abs(diff_pct):.1f}% dari avg</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # ── Best model tetap ditampilkan sebagai referensi ──
         best = next((r for r in results if r["key"] == "random_forest"), results[0])
         st.markdown(f"""
-        <div class="price-box">
-          <div class="price-label">🏆 Best Model — Random Forest Regressor</div>
-          <div class="price-value">{fmt_price(best['price'])}</div>
-          <div class="price-range">Kisaran estimasi: {fmt_price(best['pmin'])} – {fmt_price(best['pmax'])}</div>
+        <div class="price-box" style="background:linear-gradient(135deg,#1a1a2e,#16213e);margin-top:0;">
+          <div class="price-label">🏆 Best Single Model — Random Forest (R² ~0.87)</div>
+          <div class="price-value" style="font-size:28px;">{fmt_price(best['price'])}</div>
+          <div class="price-range">Kisaran: {fmt_price(best['pmin'])} – {fmt_price(best['pmax'])}</div>
         </div>
         """, unsafe_allow_html=True)
 
