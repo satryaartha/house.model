@@ -1,20 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import joblib
 import os
-import pickle
 import plotly.graph_objects as go
 import plotly.express as px
-
-# joblib opsional — fallback ke pickle jika tidak tersedia
-try:
-    import joblib
-    def _load_model(path):
-        return joblib.load(path)
-except ImportError:
-    def _load_model(path):
-        with open(path, "rb") as f:
-            return pickle.load(f)
 
 st.set_page_config(
     page_title="House Price Predictor – Tebet",
@@ -53,7 +43,7 @@ def load_models():
             path = os.path.join(base, fname)
             if os.path.exists(path):
                 try:
-                    models[key] = _load_model(path)
+                    models[key] = joblib.load(path)
                     break
                 except Exception:
                     continue
