@@ -37,6 +37,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 @st.cache_resource
 def load_models():
     models = {}
+    errors = []
     base = os.path.dirname(os.path.abspath(__file__))
     candidates = {
         "random_forest":     ["random_forest.pkl", "house_price_model.pkl"],
@@ -51,14 +52,28 @@ def load_models():
                 try:
                     models[key] = _load_model(path)
                     break
-                except Exception:
-                    continue
-    return models
+                except Exception as e:
+                    errors.append(f"{fname}: {type(e).__name__}: {e}")
+            else:
+                errors.append(f"{fname}: file tidak ditemukan")
+    return models, errors, base
 
-MODELS = load_models()
+MODELS, LOAD_ERRORS, BASE_DIR = load_models()
 
 if not MODELS:
-    st.error("❌ Tidak ada model yang berhasil dimuat. Pastikan file .pkl ada di repo.")
+    st.error("❌ Tidak ada model yang berhasil dimuat.")
+    st.markdown("### 🔍 Info Debug")
+    import sklearn
+    st.code(f"sklearn version: {sklearn.__version__}")
+    st.code(f"Base directory: {BASE_DIR}")
+    try:
+        files = [f for f in os.listdir(BASE_DIR) if f.endswith(".pkl")]
+        st.code(f"File .pkl ditemukan: {files}")
+    except Exception as e:
+        st.code(f"Gagal list dir: {e}")
+    st.markdown("**Detail error tiap model:**")
+    for err in LOAD_ERRORS:
+        st.code(err)
     st.stop()
 
 MODEL_META = {
