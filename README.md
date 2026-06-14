@@ -1,8 +1,5 @@
 # 🏠 House Price Prediction — Tebet, Jakarta Selatan
 
-> **Final Project COMP6577001 — Machine Learning**  
-> BINUS University 2025/2026
-
 Aplikasi prediksi harga rumah di area **Tebet, Jakarta Selatan** menggunakan 4 model Machine Learning klasik yang digabungkan dengan metode **Ensemble Simple Average**.
 
 🔗 **Live App:** [housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app](https://housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app)
@@ -150,6 +147,4 @@ App akan terbuka di `http://localhost:8501`
 
 ## 👨‍💻 Author
 
-**Satryaartha**  
-BINUS University — COMP6577001 Machine Learning  
-2025/2026
+**Satryaartha**
