@@ -122,10 +122,6 @@ with st.sidebar:
 st.markdown("""
 <div style="background:linear-gradient(135deg,#0f2044,#1a3460);border-radius:14px;
      padding:32px 36px;margin-bottom:28px;">
-  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;
-       color:#6ba3e8;margin-bottom:10px;">
-    Final Project · COMP6577001 · BINUS University 2025/2026
-  </div>
   <h1 style="font-size:2rem;font-weight:700;color:#fff;margin:0 0 8px;">House Price Prediction</h1>
   <p style="font-size:14px;color:rgba(255,255,255,0.5);margin:0;">
     Tebet, Jakarta Selatan · 4 Classical ML Models · 1.010 Data Listings
