@@ -98,7 +98,7 @@ def fmt_short(v):
 # ── Sidebar ──
 with st.sidebar:
     st.markdown("## 🏠 House Price Predictor")
-    st.caption("COMP6577001 – Machine Learning\nBINUS University 2025/2026")
+    st.caption("Tebet, Jakarta Selatan · ML Prediction App")
     st.divider()
     st.markdown("### Input Spesifikasi Rumah")
     lb  = st.slider("Luas Bangunan (m²)", 40, 600, 150, step=5)
@@ -377,7 +377,7 @@ with tab4:
             ("Train/Test Split","80% training (808), 20% testing (202). random_state=42."),
             ("Model Training","4 model: Linear, Ridge, Lasso, Random Forest. Evaluasi R² dan MAE."),
             ("Cross-Validation","5-Fold CV pada Random Forest. Performa konsisten."),
-            ("Deploy","Model disimpan ke .pkl via joblib. Deploy ke Streamlit Cloud."),
+            ("Deploy","Model disimpan ke .pkl via joblib. Deploy ke Streamlit Cloud sebagai web app publik."),
         ]
         for i,(title,desc) in enumerate(steps):
             st.markdown(f"""
@@ -394,7 +394,7 @@ with tab4:
     with col_s:
         st.markdown("**Tech Stack**")
         tech = [
-            ("Language","Python 3.x"),("ML Library","scikit-learn 1.6.1"),
+            ("Language","Python 3.x"),("ML Library","scikit-learn"),
             ("Data","pandas, numpy"),("App Framework","Streamlit"),
             ("Serialization","joblib"),("Deployment","Streamlit Cloud"),
             ("Version Control","Git + GitHub"),
