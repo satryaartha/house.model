@@ -63,8 +63,6 @@ MODELS, LOAD_ERRORS, BASE_DIR = load_models()
 if not MODELS:
     st.error("❌ Tidak ada model yang berhasil dimuat.")
     st.markdown("### 🔍 Info Debug")
-    import sklearn
-    st.code(f"sklearn version: {sklearn.__version__}")
     st.code(f"Base directory: {BASE_DIR}")
     try:
         files = [f for f in os.listdir(BASE_DIR) if f.endswith(".pkl")]
