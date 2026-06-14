@@ -1,152 +1,155 @@
-# RumahPrediktor API 🏠
+# 🏠 House Price Prediction — Tebet, Jakarta Selatan
 
-Backend Flask untuk prediksi harga rumah Tebet, Jakarta Selatan.  
-Menggunakan model **Random Forest** yang dilatih dari 1.010 data listing nyata.
+> **Final Project COMP6577001 — Machine Learning**  
+> BINUS University 2025/2026
+
+Aplikasi prediksi harga rumah di area **Tebet, Jakarta Selatan** menggunakan 4 model Machine Learning klasik yang digabungkan dengan metode **Ensemble Simple Average**.
+
+🔗 **Live App:** [housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app](https://housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app)
 
 ---
 
-## Struktur File
+## 📸 Preview
+
+| Tab | Deskripsi |
+|-----|-----------|
+| 🏠 Prediction | Input spesifikasi rumah, jalankan 4 model, lihat ensemble result |
+| 📊 Data Overview | Statistik dan distribusi dataset |
+| 🤖 Model Details | Perbandingan performa 4 model |
+| ⚙️ ML Pipeline | Arsitektur end-to-end pipeline |
+
+---
+
+## 🤖 Model yang Digunakan
+
+| Ranking | Model | R² Score | MAE |
+|---------|-------|----------|-----|
+| 🥇 | Random Forest (n=300, max_depth=20) | ~0.78 | ~2.1 M |
+| 🥈 | Ridge Regression (α=10) | ~0.77 | ~3.2 M |
+| 🥉 | Lasso Regression (α=1000) | ~0.77 | ~3.2 M |
+| 4️⃣ | Linear Regression | ~0.77 | ~3.2 M |
+
+Hasil prediksi akhir menggunakan **Ensemble Simple Average** — rata-rata dari semua model yang berhasil dimuat.
+
+---
+
+## 📁 Struktur Repo
 
 ```
-rumah-predictor-api/
-├── app.py                  # Flask application utama
-├── house_price_model.pkl   # Model Random Forest (joblib)
+house.model/
+├── streamlit_app.py        # Main Streamlit application
 ├── requirements.txt        # Python dependencies
-├── Procfile                # Untuk Railway / Render
-├── railway.toml            # Konfigurasi Railway
-└── README.md
+├── random_forest.pkl       # Trained Random Forest model
+├── ridge.pkl               # Trained Ridge model
+├── lasso.pkl               # Trained Lasso model
+├── linear_regression.pkl   # Trained Linear Regression model
+└── README.md               # This file
 ```
 
 ---
 
-## Endpoint API
+## 📊 Dataset
 
-### `GET /`
-Health check — cek apakah server aktif.
+- **Sumber:** DATA_RUMAH.csv
+- **Jumlah data:** 1.010 listing rumah
+- **Area:** Tebet, Jakarta Selatan
+- **Fitur yang digunakan:**
 
-**Response:**
-```json
-{
-  "status": "ok",
-  "message": "RumahPrediktor API aktif",
-  "endpoint": "POST /predict"
-}
+| Fitur | Tipe | Deskripsi |
+|-------|------|-----------|
+| LB | Numerik | Luas Bangunan (m²) |
+| LT | Numerik | Luas Tanah (m²) |
+| KT | Numerik | Jumlah Kamar Tidur |
+| KM | Numerik | Jumlah Kamar Mandi |
+| GRS | Numerik | Jumlah Garasi |
+| LOKASI | Kategorikal | Area dalam Tebet |
+| RASIO_BANGUNAN | Numerik (derived) | LB / LT |
+| TOTAL_RUANGAN | Numerik (derived) | KT + KM |
+
+---
+
+## ⚙️ ML Pipeline
+
+```
+Raw Data (DATA_RUMAH.csv)
+        ↓
+Feature Engineering
+  - Ekstrak LOKASI dari nama listing
+  - Buat RASIO_BANGUNAN = LB / LT
+  - Buat TOTAL_RUANGAN  = KT + KM
+        ↓
+Preprocessing (ColumnTransformer)
+  - Numerik  : SimpleImputer(median) + StandardScaler
+  - Kategorikal: SimpleImputer(most_frequent) + OneHotEncoder
+        ↓
+Train/Test Split (80:20, random_state=42)
+        ↓
+Training 4 Model (scikit-learn Pipeline)
+        ↓
+Evaluasi (R² Score + MAE)
+        ↓
+Simpan ke .pkl (joblib)
+        ↓
+Deploy ke Streamlit Cloud
 ```
 
 ---
 
-### `POST /predict`
-Prediksi harga rumah berdasarkan spesifikasi.
+## 🚀 Cara Menjalankan Lokal
 
-**Request Body (JSON):**
-```json
-{
-  "LB": 150,
-  "LT": 200,
-  "KT": 4,
-  "KM": 3,
-  "GRS": 2,
-  "LOKASI": "Jakarta Selatan"
-}
-```
-
-| Field  | Tipe   | Keterangan              | Range        |
-|--------|--------|-------------------------|--------------|
-| LB     | float  | Luas Bangunan (m²)      | 40 – 1200    |
-| LT     | float  | Luas Tanah (m²)         | 25 – 1400    |
-| KT     | int    | Jumlah Kamar Tidur      | 2 – 10       |
-| KM     | int    | Jumlah Kamar Mandi      | 1 – 10       |
-| GRS    | int    | Jumlah Garasi           | 0 – 10       |
-| LOKASI | string | Area lokasi             | Lihat bawah  |
-
-**Nilai LOKASI yang valid:**
-- `Jakarta Selatan`
-- `Tebet`
-- `Tebet Timur`
-- `Tebet Barat`
-- `Tebet Utara`
-- `Kebon Baru`
-- `Menteng Dalam`
-
-**Response berhasil:**
-```json
-{
-  "success": true,
-  "harga": 5415632567,
-  "harga_min": 4765756659,
-  "harga_max": 6065508315,
-  "harga_formatted": "Rp 5,415,632,567",
-  "input": {
-    "LB": 150,
-    "LT": 200,
-    "KT": 4,
-    "KM": 3,
-    "GRS": 2,
-    "LOKASI": "Jakarta Selatan",
-    "RASIO_BANGUNAN": 0.75,
-    "TOTAL_RUANGAN": 7
-  }
-}
-```
-
----
-
-## Deploy ke Railway (Gratis)
-
-### Langkah 1 — Upload ke GitHub
-1. Buat repo baru di github.com
-2. Upload semua file ini ke repo tersebut
-3. **Pastikan `house_price_model.pkl` ikut di-upload**
-
-### Langkah 2 — Deploy ke Railway
-1. Buka [railway.app](https://railway.app)
-2. Login dengan akun GitHub
-3. Klik **"New Project"** → **"Deploy from GitHub repo"**
-4. Pilih repo yang baru dibuat
-5. Railway otomatis detect Python dan install dependencies
-6. Tunggu deploy selesai (~2–3 menit)
-7. Klik **"Settings"** → **"Domains"** → **"Generate Domain"**
-8. Dapat URL seperti: `https://rumah-predictor-api.up.railway.app`
-
-### Langkah 3 — Hubungkan ke Frontend Netlify
-Ganti URL API di file HTML frontend:
-```javascript
-const API_URL = "https://rumah-predictor-api.up.railway.app";
-```
-
----
-
-## Jalankan Lokal
+### 1. Clone repo
 
 ```bash
-# Install dependencies
+git clone https://github.com/satryaartha/house.model.git
+cd house.model
+```
+
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
-
-# Jalankan server
-python app.py
-
-# Server aktif di http://localhost:5000
 ```
 
-**Test dengan curl:**
+### 3. Jalankan app
+
 ```bash
-curl -X POST http://localhost:5000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"LB":150,"LT":200,"KT":4,"KM":3,"GRS":2,"LOKASI":"Jakarta Selatan"}'
+streamlit run streamlit_app.py
 ```
+
+App akan terbuka di `http://localhost:8501`
 
 ---
 
-## Info Model
+## 🔧 Tech Stack
 
-| Properti          | Detail                          |
-|-------------------|---------------------------------|
-| Algoritma         | Random Forest Regressor         |
-| n_estimators      | 300                             |
-| max_depth         | 20                              |
-| Akurasi R²        | ~0.87                           |
-| MAE               | ~Rp 1.8 Miliar                  |
-| Cross Validation  | 5-Fold                          |
-| Data Training     | 808 listing (80%)               |
-| Data Testing      | 202 listing (20%)               |
-| Dataset           | 1.010 listing Tebet, Jaksel     |
+| Komponen | Teknologi |
+|----------|-----------|
+| Language | Python 3.x |
+| ML Library | scikit-learn 1.9.0 |
+| Data Processing | pandas, numpy |
+| App Framework | Streamlit |
+| Model Serialization | joblib |
+| Deployment | Streamlit Cloud |
+| Version Control | Git + GitHub |
+
+---
+
+## 📈 Cara Menggunakan Aplikasi
+
+1. **Buka app** di link di atas
+2. **Atur input** di sidebar kiri:
+   - Geser slider Luas Bangunan, Luas Tanah, Kamar Tidur, Kamar Mandi, Garasi
+   - Pilih Lokasi dari dropdown
+3. **Klik ⚡ Run All Models**
+4. **Lihat hasil:**
+   - Kotak besar kuning = harga ensemble (rata-rata 4 model)
+   - 4 kartu di bawahnya = kontribusi tiap model
+   - Tabel = perbandingan detail semua model
+
+---
+
+## 👨‍💻 Author
+
+**Satryaartha**  
+BINUS University — COMP6577001 Machine Learning  
+2025/2026
