@@ -144,10 +144,22 @@ tab1,tab2,tab3,tab4 = st.tabs([
 # ════════════════════════════════════════
 with tab1:
     st.markdown("##### Model Comparison Predictor")
-    st.caption("Klik '⚡ Run All Models' di sidebar untuk menjalankan semua model.")
+    st.caption("Atur input di sidebar kiri, lalu klik tombol di bawah untuk menjalankan semua model.")
 
-    if run_btn or "results" in st.session_state:
-        if run_btn:
+    # Tombol utama di main area — selalu terlihat meski sidebar di-collapse
+    col_btn, col_hint = st.columns([2, 5])
+    with col_btn:
+        main_run_btn = st.button("⚡ Run All Models", type="primary", use_container_width=True, key="main_run")
+    with col_hint:
+        st.markdown(
+            "<div style='padding:8px 0;font-size:13px;color:#6b7280;'>← Atur spesifikasi rumah di sidebar kiri terlebih dahulu</div>",
+            unsafe_allow_html=True
+        )
+
+    run_any = run_btn or main_run_btn
+
+    if run_any or "results" in st.session_state:
+        if run_any:
             input_df = build_input(lb, lt, kt, km, grs, lokasi)
             results  = []
             for key, pipeline in MODELS.items():
