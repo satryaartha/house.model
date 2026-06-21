@@ -160,14 +160,14 @@ with tab1:
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">📐 Luas Bangunan</div>""",
         unsafe_allow_html=True)
         lb = st.slider("LB_hidden", 40, 600, 150, step=5, key="lb", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{lb} m²</div></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_lt:
         st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🗺️ Luas Tanah</div>""",
         unsafe_allow_html=True)
         lt = st.slider("LT_hidden", 25, 700, 200, step=5, key="lt", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{lt} m²</div></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
@@ -178,21 +178,21 @@ with tab1:
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🛏️ Kamar Tidur</div>""",
         unsafe_allow_html=True)
         kt = st.slider("KT_hidden", 1, 10, 4, key="kt", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{kt} kamar</div></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_km:
         st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🚿 Kamar Mandi</div>""",
         unsafe_allow_html=True)
         km = st.slider("KM_hidden", 1, 10, 3, key="km", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{km} kamar</div></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_grs:
         st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🚗 Garasi</div>""",
         unsafe_allow_html=True)
         grs = st.slider("GRS_hidden", 0, 10, 2, key="grs", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{grs} garasi</div></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
