@@ -156,49 +156,49 @@ with tab1:
     # Row 1 — Luas
     col_lb, col_lt = st.columns(2)
     with col_lb:
-        st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px 10px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:6px;">📐 Luas Bangunan</div>""",
+        st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">📐 Luas Bangunan</div>""",
         unsafe_allow_html=True)
         lb = st.slider("LB_hidden", 40, 600, 150, step=5, key="lb", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#0f2044;margin-top:2px;">{lb} m²</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{lb} m²</div></div>', unsafe_allow_html=True)
 
     with col_lt:
-        st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px 10px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:6px;">🗺️ Luas Tanah</div>""",
+        st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🗺️ Luas Tanah</div>""",
         unsafe_allow_html=True)
         lt = st.slider("LT_hidden", 25, 700, 200, step=5, key="lt", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#0f2044;margin-top:2px;">{lt} m²</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{lt} m²</div></div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     # Row 2 — Rooms
     col_kt, col_km, col_grs = st.columns(3)
     with col_kt:
-        st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px 10px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:6px;">🛏️ Kamar Tidur</div>""",
+        st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🛏️ Kamar Tidur</div>""",
         unsafe_allow_html=True)
         kt = st.slider("KT_hidden", 1, 10, 4, key="kt", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#0f2044;margin-top:2px;">{kt} kamar</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{kt} kamar</div></div>', unsafe_allow_html=True)
 
     with col_km:
-        st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px 10px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:6px;">🚿 Kamar Mandi</div>""",
+        st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🚿 Kamar Mandi</div>""",
         unsafe_allow_html=True)
         km = st.slider("KM_hidden", 1, 10, 3, key="km", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#0f2044;margin-top:2px;">{km} kamar</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{km} kamar</div></div>', unsafe_allow_html=True)
 
     with col_grs:
-        st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px 10px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:6px;">🚗 Garasi</div>""",
+        st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px 10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:6px;">🚗 Garasi</div>""",
         unsafe_allow_html=True)
         grs = st.slider("GRS_hidden", 0, 10, 2, key="grs", label_visibility="collapsed")
-        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#0f2044;margin-top:2px;">{grs} garasi</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;">{grs} garasi</div></div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     # Row 3 — Lokasi
-    st.markdown("""<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:10px;padding:14px 16px;">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2563a8;margin-bottom:8px;">📍 Lokasi</div>""",
+    st.markdown("""<div style="background:#1e3a5f;border:1px solid #2563a8;border-radius:10px;padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;margin-bottom:8px;">📍 Lokasi</div>""",
     unsafe_allow_html=True)
     lokasi = st.selectbox("Lokasi_hidden", [
         "Jakarta Selatan","Tebet","Tebet Timur",
@@ -277,13 +277,13 @@ with tab1:
                 clr   = "#16a34a" if diff >= 0 else "#dc2626"
                 with cols[i]:
                     st.markdown(f"""
-                    <div style="background:#f8faff;border:1px solid #dbeafe;
+                    <div style="background:#1a2f4a;border:1px solid #2563a8;
                          border-left:4px solid {r['color']};border-radius:8px;
                          padding:10px 12px;text-align:center;">
                       <div style="font-size:10px;font-weight:700;color:{r['color']};margin-bottom:3px;">
                         {label_map.get(r['key'], r['key'])}
                       </div>
-                      <div style="font-size:14px;font-weight:700;color:#0f2044;">{fmt_price(r['price'])}</div>
+                      <div style="font-size:14px;font-weight:700;color:#ffffff;">{fmt_price(r['price'])}</div>
                       <div style="font-size:10px;color:{clr};">{arrow} {abs(diff_pct):.1f}%</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -293,16 +293,16 @@ with tab1:
             # RF reference
             rf = next((r for r in results if r["key"]=="random_forest"), results[0])
             st.markdown(f"""
-            <div style="background:#f8faff;border:1px solid #dbeafe;border-left:4px solid #1e4080;
+            <div style="background:#1a2f4a;border:1px solid #2563a8;border-left:4px solid #60a5fa;
                  border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;
                  align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px;">
               <div>
-                <div style="font-size:11px;font-weight:600;color:#1e4080;margin-bottom:2px;">
+                <div style="font-size:11px;font-weight:600;color:#93c5fd;margin-bottom:2px;">
                   🏆 Best Model — Random Forest (R² ~0.78)
                 </div>
-                <div style="font-size:18px;font-weight:700;color:#0f2044;">{fmt_price(rf['price'])}</div>
+                <div style="font-size:18px;font-weight:700;color:#ffffff;">{fmt_price(rf['price'])}</div>
               </div>
-              <div style="font-size:12px;color:#6b7280;">
+              <div style="font-size:12px;color:#94a3b8;">
                 Kisaran: {fmt_price(rf['pmin'])} – {fmt_price(rf['pmax'])}
               </div>
             </div>
