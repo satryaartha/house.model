@@ -6,14 +6,6 @@ Training script untuk House Price Prediction — Tebet, Jakarta Selatan.
 Melatih 4 model Classical ML (Linear Regression, Ridge, Lasso, Random Forest)
 menggunakan scikit-learn, lalu menyimpan tiap pipeline ke file .pkl.
 
-Cara menjalankan:
-    python train_model.py
-
-Output:
-    random_forest.pkl
-    ridge.pkl
-    lasso.pkl
-    linear_regression.pkl
 """
 
 import pandas as pd
@@ -34,7 +26,6 @@ from sklearn.base import clone
 # ════════════════════════════════════════
 # 1. LOAD DATA
 # ════════════════════════════════════════
-# Dataset di-encode latin-1 (mengandung karakter non-UTF8)
 df = pd.read_csv("DATA_RUMAH.csv", encoding="latin-1")
 df.columns = df.columns.str.strip()
 print(f"Dataset loaded: {df.shape[0]} baris, {df.shape[1]} kolom")
