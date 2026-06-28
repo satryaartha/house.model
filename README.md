@@ -2,7 +2,7 @@
 
 Aplikasi prediksi harga rumah di area **Tebet, Jakarta Selatan** menggunakan 4 model Machine Learning klasik yang digabungkan dengan metode **Ensemble Simple Average**.
 
-🔗 **Live App:** [housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app](https://housemodel-jjx4dpjzbnuq9wqntthcev.streamlit.app)
+🔗 **Live App:** [Klik here](https://houseprediction-jjx4dpjzbnuq9wqntthcev.streamlit.app/)
 
 ---
 
